@@ -1,0 +1,28 @@
+{
+"frames": [
+	{
+		"filename": "jack0.png",
+		"frame": {"x":176, "y":0, "w":175, "h":420},
+		"spriteSourceSize": {"x":0,"y":0,"w":175,"h":420},
+		"sourceSize": {"w":175,"h":420}
+	},
+	{
+		"filename": "jack1.png",
+		"frame": {"x":352, "y":0, "w":103, "h":421},
+		"spriteSourceSize": {"x":0,"y":0,"w":103,"h":421},
+		"sourceSize": {"w":103,"h":421}
+	},
+	{
+		"filename": "jack2.png",
+		"frame": {"x":0, "y":0, "w":175, "h":420},
+		"spriteSourceSize": {"x":0,"y":0,"w":175,"h":420},
+		"sourceSize": {"w":175,"h":420}
+	}
+
+],
+"meta": {
+	"image": "jack.png",
+	"size": {"w": 512, "h": 512},
+	"scale": "1"
+}
+}
