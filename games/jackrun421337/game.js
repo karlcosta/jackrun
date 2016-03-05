@@ -72,6 +72,8 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.world = new JackDanger.JackRun421337.World(this);
 	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
 	
+	this.physics.setBoundsToWorld();
+	
 	this.camera.x = game.width / 2;
 	this.camera.y = game.height / 2;
 }
@@ -104,9 +106,12 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	this.position = position;
 	this.sprite = game.add.sprite(this.position.x, this.position.y, "jack", "jack_rechts0");
 	
+	this.sprite.checkWorldBounds = true;
+	this.sprite.events.onOutOfBounds.add(onVictory);
+	
 	game.physics.arcade.enable(this.sprite);
 	
-	this.sprite.body.collideWorldBounds = true;
+	this.sprite.body.collideWorldBounds = false;
 	this.sprite.body.velocity.x = speed;
 	
 	this.speed = speed;
