@@ -1,28 +1,93 @@
 {
 "frames": [
 	{
-		"filename": "jack0.png",
-		"frame": {"x":176, "y":0, "w":175, "h":420},
-		"spriteSourceSize": {"x":0,"y":0,"w":175,"h":420},
-		"sourceSize": {"w":175,"h":420}
+		"filename": "jack_rechts0",
+		"frame": {"x":0, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
 	},
 	{
-		"filename": "jack1.png",
-		"frame": {"x":352, "y":0, "w":103, "h":421},
-		"spriteSourceSize": {"x":0,"y":0,"w":103,"h":421},
-		"sourceSize": {"w":103,"h":421}
+		"filename": "jack_rechts1",
+		"frame": {"x":30, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
 	},
 	{
-		"filename": "jack2.png",
-		"frame": {"x":0, "y":0, "w":175, "h":420},
-		"spriteSourceSize": {"x":0,"y":0,"w":175,"h":420},
-		"sourceSize": {"w":175,"h":420}
+		"filename": "jack_rechts2",
+		"frame": {"x":60, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_sprung_rechts0",
+		"frame": {"x":90, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_sprung_links0",
+		"frame": {"x":120, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_links0",
+		"frame": {"x":150, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_links1",
+		"frame": {"x":180, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_links2",
+		"frame": {"x":210, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_leiter0",
+		"frame": {"x":240, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_leiter1",
+		"frame": {"x":270, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_schwimmen_rechts0",
+		"frame": {"x":300, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_schwimmen_rechts1",
+		"frame": {"x":330, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_schwimmen_links0",
+		"frame": {"x":360, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
+	},
+	{
+		"filename": "jack_schwimmen_links1",
+		"frame": {"x":390, "y":0, "w":30, "h":34},
+		"spriteSourceSize": {"x":0,"y":0,"w":30,"h":34},
+		"sourceSize": {"w":30,"h":34}
 	}
-
 ],
 "meta": {
 	"image": "jack.png",
-	"size": {"w": 512, "h": 512},
+	"size": {"w": 420, "h": 34},
 	"scale": "1"
 }
 }
