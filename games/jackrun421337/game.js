@@ -92,6 +92,10 @@ JackDanger.JackRun421337.prototype.update = function() {
 	this.physics.arcade.collide(this.jack.sprite, this.world.layer);
 }
 
+JackDanger.JackRun421337.prototype.render = function() {
+	//game.debug.body(this.jack.sprite);
+}
+
 /////////////////////////////////////////////////////////
 // Zeug das zum Spiel gehört, das kannst du alles ///////
 // Löschen oder ändern oder was weiß ich ////////////////
@@ -103,18 +107,25 @@ JackDanger.JackRun421337.prototype.update = function() {
 JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	logInfo("generate Jack");
 	
+	// Jacks Position und Geschwindigkeit
 	this.position = position;
+	this.speed = speed;
+	
+	// Jack-Sprite
 	this.sprite = game.add.sprite(this.position.x, this.position.y, "jack", "jack_rechts0");
 	
+	// Sieg, falls Ende der Welt erreicht wird
 	this.sprite.checkWorldBounds = true;
 	this.sprite.events.onOutOfBounds.add(onVictory);
 	
 	game.physics.arcade.enable(this.sprite);
 	
+	// Jack nicht anhalten, wenn sie Welt verlässt
 	this.sprite.body.collideWorldBounds = false;
 	this.sprite.body.velocity.x = speed;
 	
-	this.speed = speed;
+	// Kollisions-Box
+	this.sprite.body.setSize(this.sprite.width, this.sprite.height / 4, 0, 0.875 * this.sprite.height);
 	
 	this.setAnimations();
 	this.doAnimation("right");
@@ -130,6 +141,7 @@ JackDanger.JackRun421337.Jack.prototype = {
 	},
 	
 	update: function() {
+		this.sprite.body.velocity.x = this.speed;
 		this.sprite.body.velocity.y = 0;
 		if (Pad.isDown(Pad.UP)) {
 			this.sprite.body.velocity.y = -this.speed;
@@ -151,7 +163,7 @@ JackDanger.JackRun421337.World = function(game) {
 	
 	this.map = game.add.tilemap("map");
 	this.map.addTilesetImage("epyx_JDanger_tiles", "tiles");
-	this.map.setCollision(226);
+	this.map.setCollision([226,227]);
 	this.layer = this.map.createLayer("Kachelebene 1", 800, 450);
 	this.layer.resizeWorld();
 }
