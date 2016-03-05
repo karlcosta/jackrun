@@ -64,8 +64,16 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.timeText = game.add.bitmapText(game.width / 2, 20, "testfont", "", 30);
 	this.timeText.anchor.set(0.5);
 	
+	this.jackOffset = 50;
+	var jackPos = {};
+	jackPos.x = this.jackOffset;
+	jackPos.y = 50;
+	
 	this.world = new JackDanger.JackRun421337.World(this);
-	this.jack  = new JackDanger.JackRun421337.Jack(this, this.speed);
+	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
+	
+	this.camera.x = game.width / 2;
+	this.camera.y = game.height / 2;
 }
 
 //wird jeden Frame aufgerufen
@@ -73,8 +81,13 @@ JackDanger.JackRun421337.prototype.update = function() {
 	logInfo("update JackRun");
 	
     var dt = this.time.physicsElapsedMS * 0.001;
-
+	
+	// Jack bewegen
 	this.jack.update();
+	// Kamera bewegen
+	this.camera.x = this.jack.position.x - this.jackOffset;
+	
+	this.physics.arcade.collide(this.jack.sprite, this.world.layer);
 }
 
 /////////////////////////////////////////////////////////
@@ -85,16 +98,16 @@ JackDanger.JackRun421337.prototype.update = function() {
 /**
  *	Klasse Jack
  */
-JackDanger.JackRun421337.Jack = function(game, speed) {
-	logInfo("generate Jack")
-	this.sprite = game.add.sprite(50,50, "jack", "jack_rechts0");
+JackDanger.JackRun421337.Jack = function(game, position, speed) {
+	logInfo("generate Jack");
+	
+	this.position = position;
+	this.sprite = game.add.sprite(this.position.x, this.position.y, "jack", "jack_rechts0");
 	
 	game.physics.arcade.enable(this.sprite);
 	
 	this.sprite.body.collideWorldBounds = true;
 	this.sprite.body.velocity.x = speed;
-	
-	game.camera.follow(this.sprite);
 	
 	this.speed = speed;
 	
@@ -120,6 +133,8 @@ JackDanger.JackRun421337.Jack.prototype = {
 		if (Pad.isDown(Pad.DOWN)) {
 			this.sprite.body.velocity.y = this.speed;
 		}
+		this.position.x = this.sprite.x;
+		this.position.y = this.sprite.y;
 	}
 }
 
@@ -129,9 +144,9 @@ JackDanger.JackRun421337.Jack.prototype = {
 JackDanger.JackRun421337.World = function(game) {
 	logInfo("generate world");
 	
-	this.camera = game.camera;
 	this.map = game.add.tilemap("map");
 	this.map.addTilesetImage("epyx_JDanger_tiles", "tiles");
+	this.map.setCollision(226);
 	this.layer = this.map.createLayer("Kachelebene 1", 800, 450);
 	this.layer.resizeWorld();
 }
