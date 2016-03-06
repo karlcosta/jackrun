@@ -26,6 +26,9 @@ Wärend du an deinem Spiel arbeitest, arbeite ich am Drumherum.
 So dass es dann alles auch supi aussieht!
 */
 
+/**
+ * JackRun421337
+ */
 JackDanger.JackRun421337 = function() {
 
 };
@@ -72,6 +75,8 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.world = new JackDanger.JackRun421337.World(this);
 	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
 	
+	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
+	
 	this.physics.setBoundsToWorld();
 	
 	this.camera.x = game.width / 2;
@@ -80,9 +85,7 @@ JackDanger.JackRun421337.prototype.create = function() {
 
 //wird jeden Frame aufgerufen
 JackDanger.JackRun421337.prototype.update = function() {
-	logInfo("update JackRun");
-	
-    var dt = this.time.physicsElapsedMS * 0.001;
+	var dt = this.time.physicsElapsedMS * 0.001;
 	
 	// Jack bewegen
 	this.jack.update();
@@ -96,13 +99,17 @@ JackDanger.JackRun421337.prototype.render = function() {
 	//game.debug.body(this.jack.sprite);
 }
 
-/////////////////////////////////////////////////////////
-// Zeug das zum Spiel gehört, das kannst du alles ///////
-// Löschen oder ändern oder was weiß ich ////////////////
-/////////////////////////////////////////////////////////
+JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
+	var number = this.randomIntFromInterval(1,2000);
+	this.world.collectDiamond(tile, number);
+}
+
+JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
+	return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 /**
- *	Klasse Jack
+ *	Jack
  */
 JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	logInfo("generate Jack");
@@ -120,7 +127,7 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	
 	game.physics.arcade.enable(this.sprite);
 	
-	// Jack nicht anhalten, wenn sie Welt verlässt
+	// Jack nicht anhalten, wenn er Welt verlässt
 	this.sprite.body.collideWorldBounds = false;
 	this.sprite.body.velocity.x = speed;
 	
@@ -156,14 +163,38 @@ JackDanger.JackRun421337.Jack.prototype = {
 }
 
 /**
- * Klase World
+ * World
  */
 JackDanger.JackRun421337.World = function(game) {
 	logInfo("generate world");
+	this.game = game;
 	
-	this.map = game.add.tilemap("map");
+	this.map = this.game.add.tilemap("map");
 	this.map.addTilesetImage("epyx_JDanger_tiles", "tiles");
 	this.map.setCollision([226,227]);
 	this.layer = this.map.createLayer("Kachelebene 1", 800, 450);
 	this.layer.resizeWorld();
+
+	this.numberTextsSpeed = 100;
+}
+
+JackDanger.JackRun421337.World.prototype = {
+	collectDiamond: function(tile, number) {
+		this.map.replace(tile.index, 143, tile.x, tile.y, 1, 1, this.layer);
+		
+		// Text für Nummer erstellen
+		var numberText = this.game.add.bitmapText(tile.x * this.map.tileWidth, tile.y * this.map.tileHeight, "testfont", number.toString(), 16);
+		
+		numberText.checkWorldBounds = true;
+		numberText.events.onOutOfBounds.add(this.destroy, numberText);
+		
+		this.game.physics.arcade.enable(numberText);
+	
+		numberText.body.collideWorldBounds = false;
+		numberText.body.velocity.y = -this.numberTextsSpeed;
+	},
+	
+	destroy: function(object) {
+		object.destroy(true);
+	}
 }
