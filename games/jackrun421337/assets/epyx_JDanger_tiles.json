@@ -1,0 +1,27 @@
+{
+"frames": [
+	{
+		"filename": "wall_grey",
+		"frame": {"x":96, "y":96, "w":32, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	},
+	{
+		"filename": "wall_brown",
+		"frame": {"x":0, "y":288, "w":32, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	},
+	{
+		"filename": "spikes",
+		"frame": {"x":0, "y":384, "w":32, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	}
+],
+"meta": {
+	"image": "epyx_JDanger_tiles.png",
+	"size": {"w": 800, "h": 512},
+	"scale": "1"
+}
+}
