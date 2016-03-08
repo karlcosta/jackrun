@@ -65,7 +65,7 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.stage.backgroundColor = 0x000000;
 	this.windowWidth = game.width;
 	this.windowHeight = game.height;
-	
+	this.lose = false;
 	this.speed = 200;
 	
 	this.jackOffset = 64;
@@ -86,15 +86,21 @@ JackDanger.JackRun421337.prototype.create = function() {
 JackDanger.JackRun421337.prototype.update = function() {
 	var dt = this.time.physicsElapsedMS * 0.001;
 	
+	if (this.lose) {
+		if (this.loseCounter == 0) {
+			onLose();
+		}
+		this.loseCounter--;
+	}
+	else {
+		// Kamera bewegen
+		this.camera.x = this.jack.position.x - this.jackOffset;		
+		this.physics.arcade.collide(this.jack.sprite, this.world.layer);
+		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.spikesOverlap, null, this);
+	}
+	
 	// Jack bewegen
 	this.jack.update();
-	// Kamera bewegen
-	this.camera.x = this.jack.position.x - this.jackOffset;
-	
-	this.physics.arcade.collide(this.jack.sprite, this.world.layer);
-	this.physics.arcade.collide(this.jack.sprite, this.spikes.sprites, onLose);
-	
-	this.physics.arcade.overlap(this.spikes.sprites, this.world.layer, this.spikesOverlap, null, this);
 }
 
 JackDanger.JackRun421337.prototype.render = function() {
@@ -109,7 +115,11 @@ JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
 }
 
 JackDanger.JackRun421337.prototype.spikesOverlap = function(sprite, tile) {
-	//this.world.replaceTile(tile);
+	// starte Verloren-Animation
+	this.lose = true;
+	this.loseCounter = 10;
+	this.jack.killAnimation();
+	this.spikes.stop();
 }
 
 JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
@@ -122,9 +132,10 @@ JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
 JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	logInfo("generate Jack");
 	
-	// Jacks Position und Geschwindigkeit
 	this.position = position;
 	this.speed = speed;
+	this.kill = false;
+	this.killFrame = false;
 	
 	// Jack-Sprite
 	this.sprite = game.add.sprite(this.position.x, this.position.y, "jack", "jack_rechts0");
@@ -144,8 +155,6 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	
 	this.setAnimations();
 	this.doAnimation("right");
-	
-	this.sprite.tint = 0xffffff;
 }
 
 JackDanger.JackRun421337.Jack.prototype = {
@@ -157,18 +166,38 @@ JackDanger.JackRun421337.Jack.prototype = {
 		this.sprite.animations.play(name);
 	},
 	
-	update: function() {
-		this.sprite.body.velocity.x = this.speed;
+	killAnimation: function() {
+		this.kill = true;
+		this.sprite.body.velocity.x = 0;
 		this.sprite.body.velocity.y = 0;
-		if (Pad.isDown(Pad.UP)) {
-			this.sprite.body.velocity.y = -this.speed;
-		}
+		this.sprite.animations.stop();
+	},
+	
+	update: function() {
+		if (!this.kill) {
+			// Bewegung
+			this.sprite.body.velocity.x = this.speed;
+			this.sprite.body.velocity.y = 0;
+			if (Pad.isDown(Pad.UP)) {
+				this.sprite.body.velocity.y = -this.speed;
+			}
 
-		if (Pad.isDown(Pad.DOWN)) {
-			this.sprite.body.velocity.y = this.speed;
+			if (Pad.isDown(Pad.DOWN)) {
+				this.sprite.body.velocity.y = this.speed;
+			}
+			this.position.x = this.sprite.x;
+			this.position.y = this.sprite.y;			
 		}
-		this.position.x = this.sprite.x;
-		this.position.y = this.sprite.y;
+		else {
+			// Todes-Animation
+			if (this.killFrame) {
+				this.sprite.tint = 0xffffff;
+			}
+			else {
+				this.sprite.tint = 0xff0000;
+			}
+			this.killFrame = !this.killFrame;
+		}
 	}
 }
 
@@ -244,6 +273,14 @@ JackDanger.JackRun421337.Spikes = function(game, world, speed) {
 			
 			game.physics.arcade.enable(wall);
 			wall.body.velocity.x = speed;			
+		}
+	}
+}
+
+JackDanger.JackRun421337.Spikes.prototype = {
+	stop() {
+		for (var i = 0; i < this.sprites.children.length; i++) {
+			this.sprites.children[i].body.velocity.x = 0;
 		}
 	}
 }
