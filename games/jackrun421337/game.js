@@ -48,6 +48,7 @@ JackDanger.JackRun421337.prototype.preload = function() {
 	
     //füge hier ein was du alles laden musst.
     this.load.atlas("jack");
+	this.load.atlas("epyx_JDanger_tiles");
 	this.load.tilemap("map", "map.json", null, Phaser.Tilemap.TILED_JSON);
 	this.load.image("tiles", "epyx_JDanger_tiles.png");
 }
@@ -67,20 +68,18 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.timeText = game.add.bitmapText(game.width / 2, 20, "testfont", "", 30);
 	this.timeText.anchor.set(0.5);
 	
-	this.jackOffset = 50;
+	this.jackOffset = 64;
 	var jackPos = {};
 	jackPos.x = this.jackOffset;
 	jackPos.y = 50;
 	
 	this.world = new JackDanger.JackRun421337.World(this);
+	this.spikes = new JackDanger.JackRun421337.Spikes(this, this.world, this.speed);
 	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
 	
 	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
 	
 	this.physics.setBoundsToWorld();
-	
-	this.camera.x = game.width / 2;
-	this.camera.y = game.height / 2;
 }
 
 //wird jeden Frame aufgerufen
@@ -93,6 +92,9 @@ JackDanger.JackRun421337.prototype.update = function() {
 	this.camera.x = this.jack.position.x - this.jackOffset;
 	
 	this.physics.arcade.collide(this.jack.sprite, this.world.layer);
+	this.physics.arcade.collide(this.jack.sprite, this.spikes.sprites, onLose);
+	
+	this.physics.arcade.overlap(this.spikes.sprites, this.world.layer, this.spikesOverlap, null, this);
 }
 
 JackDanger.JackRun421337.prototype.render = function() {
@@ -100,8 +102,14 @@ JackDanger.JackRun421337.prototype.render = function() {
 }
 
 JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
-	var number = this.randomIntFromInterval(1,2000);
-	this.world.collectDiamond(tile, number);
+	if (sprite === this.jack.sprite) {
+		var number = this.randomIntFromInterval(1,2000);
+		this.world.collectDiamond(tile, number);
+	}
+}
+
+JackDanger.JackRun421337.prototype.spikesOverlap = function(sprite, tile) {
+	//this.world.replaceTile(tile);
 }
 
 JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
@@ -175,12 +183,20 @@ JackDanger.JackRun421337.World = function(game) {
 	this.layer = this.map.createLayer("Kachelebene 1", 800, 450);
 	this.layer.resizeWorld();
 
+	this.setPassage();
+	
 	this.numberTextsSpeed = 100;
 }
 
 JackDanger.JackRun421337.World.prototype = {
+	setPassage: function() {
+		this.passage = {};
+		this.passage.start = 1;
+		this.passage.end = 12;
+	},
+	
 	collectDiamond: function(tile, number) {
-		this.map.replace(tile.index, 143, tile.x, tile.y, 1, 1, this.layer);
+		this.replaceTile(tile);
 		
 		// Text für Nummer erstellen
 		var numberText = this.game.add.bitmapText(tile.x * this.map.tileWidth, tile.y * this.map.tileHeight, "testfont", number.toString(), 16);
@@ -194,7 +210,36 @@ JackDanger.JackRun421337.World.prototype = {
 		numberText.body.velocity.y = -this.numberTextsSpeed;
 	},
 	
+	replaceTile(tile) {
+		this.map.replace(tile.index, 143, tile.x, tile.y, 1, 1, this.layer);
+	},
+	
 	destroy: function(object) {
 		object.destroy(true);
+	}
+}
+
+/**
+ * Spikes
+ */
+JackDanger.JackRun421337.Spikes = function(game, world, speed) {
+	logInfo("generate spikes");
+	
+	this.sprites = game.add.physicsGroup(Phaser.Physics.ARCADE);
+	
+	for (var i = world.passage.start; i <= world.passage.end; i++) {
+		// Spitzen
+		var spike = this.sprites.create(0.5 * world.map.tileWidth, (i + 0.5) * world.map.tileHeight, "epyx_JDanger_tiles", "spikes");
+		spike.anchor.setTo(0.5, 0.5);
+		spike.angle = 90;
+		
+		game.physics.arcade.enable(spike);
+		spike.body.velocity.x = speed;
+		
+		// Wand hinter Spitzen
+		var wall = this.sprites.create(-world.map.tileWidth, i * world.map.tileHeight, "epyx_JDanger_tiles", "wall_brown");
+		
+		game.physics.arcade.enable(wall);
+		wall.body.velocity.x = speed;
 	}
 }
