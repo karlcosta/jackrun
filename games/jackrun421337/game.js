@@ -63,10 +63,10 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.physics.startSystem(Phaser.Physics.ARCADE);
 	
 	this.stage.backgroundColor = 0x000000;
+	this.windowWidth = game.width;
+	this.windowHeight = game.height;
 	
 	this.speed = 200;
-	this.timeText = game.add.bitmapText(game.width / 2, 20, "testfont", "", 30);
-	this.timeText.anchor.set(0.5);
 	
 	this.jackOffset = 64;
 	var jackPos = {};
@@ -144,6 +144,8 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	
 	this.setAnimations();
 	this.doAnimation("right");
+	
+	this.sprite.tint = 0xffffff;
 }
 
 JackDanger.JackRun421337.Jack.prototype = {
@@ -237,9 +239,11 @@ JackDanger.JackRun421337.Spikes = function(game, world, speed) {
 		spike.body.velocity.x = speed;
 		
 		// Wand hinter Spitzen
-		var wall = this.sprites.create(-world.map.tileWidth, i * world.map.tileHeight, "epyx_JDanger_tiles", "wall_brown");
-		
-		game.physics.arcade.enable(wall);
-		wall.body.velocity.x = speed;
+		for (var j = 1; j < game.windowWidth / world.map.tileWidth; j++) {
+			var wall = this.sprites.create(-j * world.map.tileWidth, i * world.map.tileHeight, "epyx_JDanger_tiles", "wall_brown");
+			
+			game.physics.arcade.enable(wall);
+			wall.body.velocity.x = speed;			
+		}
 	}
 }
