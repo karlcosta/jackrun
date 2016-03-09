@@ -49,6 +49,7 @@ JackDanger.JackRun421337.prototype.preload = function() {
     //füge hier ein was du alles laden musst.
     this.load.atlas("jack");
 	this.load.atlas("epyx_JDanger_tiles");
+	this.load.atlas("dangers");
 	this.load.tilemap("map", "map.json", null, Phaser.Tilemap.TILED_JSON);
 	this.load.image("tiles", "epyx_JDanger_tiles.png");
 }
@@ -59,6 +60,9 @@ JackDanger.JackRun421337.prototype.create = function() {
 	
     Pad.init();//nicht anfassen
     removeLoadingScreen();//nicht anfassen
+	
+	var spritesheetGen = new JackDanger.JackRun421337.SpritesheetGenerator(this);
+	spritesheetGen.createSpriteSheet("dangers", "SpikeBall2");
 	
 	this.physics.startSystem(Phaser.Physics.ARCADE);
 	
@@ -76,9 +80,17 @@ JackDanger.JackRun421337.prototype.create = function() {
 	jackPos.x = this.jackOffset;
 	jackPos.y = 50;
 	
+	// Welt laden
 	this.world = new JackDanger.JackRun421337.World(this);
+	
+	// Gefahren laden
 	this.spikes = new JackDanger.JackRun421337.Spikes(this, this.world, this.speed);
+	var group = this.world.getObjects("SpikeBall", "SpikeBall2");
+	this.spikeballs = new JackDanger.JackRun421337.Spikeballs(group, this.speed);
+	
+	// Jack laden
 	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
+	// HUD laden
 	this.hud = new JackDanger.JackRun421337.HUD(this);
 	
 	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
@@ -106,7 +118,9 @@ JackDanger.JackRun421337.prototype.update = function() {
 		
 		// Kollisions-Erkennung
 		this.physics.arcade.collide(this.jack.sprite, this.world.layer);
-		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.spikesOverlap, null, this);
+		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.death, null, this);
+		this.physics.arcade.overlap(this.jack.sprite, this.spikeballs.sprites, this.death, null, this);
+		this.physics.arcade.collide(this.spikeballs.sprites, this.world.layer);
 	}
 	
 	// Jack bewegen
@@ -154,12 +168,13 @@ JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
 	}
 }
 
-JackDanger.JackRun421337.prototype.spikesOverlap = function(sprite, tile) {
+JackDanger.JackRun421337.prototype.death = function(sprite, tile) {
 	// starte Verloren-Animation
 	this.lose = true;
 	this.loseCounter = 10;
 	this.jack.killAnimation();
 	this.spikes.stop();
+	this.spikeballs.stop();
 }
 
 JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
@@ -300,6 +315,12 @@ JackDanger.JackRun421337.World.prototype = {
 		numberText.body.velocity.y = -this.numberTextsSpeed;
 	},
 	
+	getObjects: function(objectId, key) {
+		var group = this.game.add.group();
+		this.map.createFromObjects("Objektebene 1", objectId, key, 0, true, false, group);
+		return group;
+	},
+	
 	replaceTile: function(tile) {
 		this.map.replace(tile.index, 143, tile.x, tile.y, 1, 1, this.layer);
 	},
@@ -345,6 +366,29 @@ JackDanger.JackRun421337.Spikes.prototype = {
 }
 
 /**
+ * Spikeballs
+ */
+JackDanger.JackRun421337.Spikeballs = function(group, speed) {
+	this.sprites = group;
+	this.speed = speed;
+	
+	for (var i = 0; i < this.sprites.children.length; i++) {
+		var spikeball = this.sprites.children[i];
+		game.physics.arcade.enable(spikeball);
+		spikeball.body.velocity.y = -this.speed;
+		spikeball.body.bounce.setTo(1,1);
+	}
+}
+
+JackDanger.JackRun421337.Spikeballs.prototype = {
+	stop: function() {
+		for (var i = 0; i < this.sprites.children.length; i++) {
+			this.sprites.children[i].body.velocity.x = 0;
+		}
+	}
+}
+
+/**
  * HUD
  */
 JackDanger.JackRun421337.HUD = function(game) {
@@ -354,16 +398,43 @@ JackDanger.JackRun421337.HUD = function(game) {
 }
 
 JackDanger.JackRun421337.HUD.prototype = {
-	setNumber(number) {
+	setNumber: function(number) {
 		this.numberText.tint = 0xffffff;
 		this.numberText.text = number.toString();
 	},
 	
-	goodNumber() {
+	goodNumber: function() {
 		this.numberText.tint = 0x00ff00;
 	},
 	
-	badNumber() {
+	badNumber: function() {
 		this.numberText.tint = 0xff0000;
+	}
+}
+
+/**
+ * SpritesheetGenerator (https://github.com/suddani/phaser_mini_games/blob/master/games/sudi/src/spritesheet_generator.js)
+ */
+JackDanger.JackRun421337.SpritesheetGenerator = function(game) {
+	this.game = game;
+}
+
+JackDanger.JackRun421337.SpritesheetGenerator.prototype = {
+	createSpriteSheet: function(atlas_key, frame_name) {
+		if (this.game.cache.checkImageKey(frame_name)) {
+			//image already loaded
+			logInfo("Dont create Spritesheet for: " + frame_name);
+			return;
+		}
+		  
+		var frame = this.game.cache.getFrameData(atlas_key).getFrameByName(frame_name);
+		var orb = this.game.make.sprite(0, 0, atlas_key, frame.name);
+		var bmd = this.game.add.bitmapData(frame.width, frame.height);
+		bmd.draw(orb, 0, 0);
+		//Check if there is actually more than one frame. otherwise just create this one image
+		if (this.game.cache.getFrameData(atlas_key).getFrameByName(frame_name+"_0000"))
+			this.game.cache.addSpriteSheet(frame.name, '', bmd.canvas, frame.height, frame.height);
+		else
+			this.game.cache.addSpriteSheet(frame.name, '', bmd.canvas, 32, 32);
 	}
 }
