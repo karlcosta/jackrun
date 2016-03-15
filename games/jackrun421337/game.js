@@ -34,12 +34,13 @@ JackDanger.JackRun421337 = function() {
 };
 
 //hier musst du deine Eintragungen vornhemen.
-addMyGame("jackrun421337", "Jack Run", "Karl_Costa", "Renn vor der Wand weg und sammle Primzahlen, 2er-Potenzen und andere tolle Zahlen!", JackDanger.JackRun421337);
+addMyGame("jackrun421337", "Jack Run", "Karl_Costa", "Renn vor der Wand weg und sammle Primzahlen, \n2er-Potenzen und andere tolle Zahlen!",
+			"Ausweichen", "Boost", "-", JackDanger.JackRun421337);
 
 
 JackDanger.JackRun421337.prototype.init = function() {
     logInfo("init JackRun");
-    addLoadingScreen(this);//nicht anfassen
+    addLoadingScreen(this, false);//nicht anfassen
 }
 
 JackDanger.JackRun421337.prototype.preload = function() {
@@ -59,8 +60,10 @@ JackDanger.JackRun421337.prototype.create = function() {
 	logInfo("create JackRun");
 	
     Pad.init();//nicht anfassen
-    removeLoadingScreen();//nicht anfassen
-	
+    //removeLoadingScreen();//nicht anfassen
+}
+
+JackDanger.JackRun421337.prototype.mycreate = function() {
 	var spritesheetGen = new JackDanger.JackRun421337.SpritesheetGenerator(this);
 	spritesheetGen.createSpriteSheet("dangers", "SpikeBall2");
 	
@@ -145,7 +148,7 @@ JackDanger.JackRun421337.prototype.playerControls = function() {
 	}
 	
 	// Beschleunigung x-Achse
-	if (Pad.justDown(Pad.RIGHT)) {
+	if (Pad.justDown(Pad.JUMP)) {
 		if (this.number != -1) {
 			if (this.allowedNumbers.indexOf(this.number) != -1) {
 				this.jack.speedUp(2, 1);
