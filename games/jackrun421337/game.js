@@ -94,6 +94,7 @@ JackDanger.JackRun421337.prototype.create = function() {
 	this.hud = new JackDanger.JackRun421337.HUD(this);
 	
 	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
+	this.world.map.setTileIndexCallback([36, 37, 61, 62], this.holeDeath, this);
 	
 	this.physics.setBoundsToWorld();
 }
@@ -118,8 +119,8 @@ JackDanger.JackRun421337.prototype.update = function() {
 		
 		// Kollisions-Erkennung
 		this.physics.arcade.collide(this.jack.sprite, this.world.layer);
-		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.death, null, this);
-		this.physics.arcade.overlap(this.jack.sprite, this.spikeballs.sprites, this.death, null, this);
+		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.spikesDeath, null, this);
+		this.physics.arcade.overlap(this.jack.sprite, this.spikeballs.sprites, this.spikesDeath, null, this);
 		this.physics.arcade.collide(this.spikeballs.sprites, this.world.layer);
 	}
 	
@@ -168,13 +169,28 @@ JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
 	}
 }
 
-JackDanger.JackRun421337.prototype.death = function(sprite, tile) {
+JackDanger.JackRun421337.prototype.holeDeath = function(sprite, tile) {
+	logInfo("fall");
+	if (!this.lose) {
+		if (sprite === this.jack.sprite) {
+			this.lose = true;
+			this.loseCounter = 10;
+			this.jack.fallAnimation();
+			this.spikes.stop();
+			this.spikeballs.stop();
+		}
+	}
+}
+
+JackDanger.JackRun421337.prototype.spikesDeath = function(sprite, tile) {
 	// starte Verloren-Animation
-	this.lose = true;
-	this.loseCounter = 10;
-	this.jack.killAnimation();
-	this.spikes.stop();
-	this.spikeballs.stop();
+	if (!this.lose) {
+		this.lose = true;
+		this.loseCounter = 10;
+		this.jack.killAnimation();
+		this.spikes.stop();
+		this.spikeballs.stop();
+	}
 }
 
 JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
@@ -192,6 +208,7 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	this.speedFactor = 1;
 	this.factorDuration = 0;
 	this.kill = false;
+	this.fall = false;
 	this.killFrame = false;
 	
 	// Jack-Sprite
@@ -225,19 +242,17 @@ JackDanger.JackRun421337.Jack.prototype = {
 	
 	killAnimation: function() {
 		this.kill = true;
-		this.sprite.body.velocity.x = 0;
-		this.sprite.body.velocity.y = 0;
-		this.sprite.animations.stop();
+		this.stop();
+	},
+	
+	fallAnimation: function() {
+		this.fall = true;
+		this.stop();
+		this.sprite.body.velocity.x = this.speed;
 	},
 	
 	update: function(dt) {
-		if (!this.kill) {
-			// Bewegung
-			this.sprite.body.velocity.x = this.speed * this.speedFactor;
-			this.position.x = this.sprite.x;
-			this.position.y = this.sprite.y;			
-		}
-		else {
+		if (this.kill) {
 			// Todes-Animation
 			if (this.killFrame) {
 				this.sprite.tint = 0xffffff;
@@ -246,6 +261,22 @@ JackDanger.JackRun421337.Jack.prototype = {
 				this.sprite.tint = 0xff0000;
 			}
 			this.killFrame = !this.killFrame;
+		}
+		else if (this.fall) {
+			// Fall-Animation
+			if (this.killFrame) {
+				this.sprite.tint = 0xffffff;
+			}
+			else {
+				this.sprite.tint = 0x000000;
+			}
+			this.killFrame = !this.killFrame;
+		}
+		else {
+			// Bewegung
+			this.sprite.body.velocity.x = this.speed * this.speedFactor;
+			this.position.x = this.sprite.x;
+			this.position.y = this.sprite.y;
 		}
 
 		if (this.speedFactor != 1) {
@@ -272,6 +303,12 @@ JackDanger.JackRun421337.Jack.prototype = {
 	
 	stopMove: function() {
 		this.sprite.body.velocity.y = 0;
+	},
+	
+	stop: function() {
+		this.sprite.body.velocity.x = 0;
+		this.sprite.body.velocity.y = 0;
+		this.sprite.animations.stop();
 	}
 }
 
