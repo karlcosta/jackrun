@@ -135,6 +135,11 @@ JackDanger.JackRun421337.prototype.render = function() {
 	if (this.jack != null) {
 		//game.debug.body(this.jack.sprite);
 	}
+	if (this.spikeballs != null) {
+		for (var i = 0; i < this.spikeballs.sprites.children.length; i++) {
+			//game.debug.body(this.spikeballs.sprites.children[i]);
+		}
+	}
 }
 
 JackDanger.JackRun421337.prototype.playerControls = function() {
@@ -456,6 +461,9 @@ JackDanger.JackRun421337.Spikeballs = function(group, speed) {
 		game.physics.arcade.enable(spikeball);
 		spikeball.body.velocity.y = -this.speed;
 		spikeball.body.bounce.setTo(1,1);
+		// Kollisions-Box
+		var bodyScale = 0.95;
+		spikeball.body.setSize(bodyScale * spikeball.width, bodyScale * spikeball.height, (1 - bodyScale) * spikeball.width / 2, (1 - bodyScale) * spikeball.height / 2);
 	}
 }
 
