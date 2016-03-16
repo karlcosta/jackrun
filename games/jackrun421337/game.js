@@ -132,7 +132,9 @@ JackDanger.JackRun421337.prototype.update = function() {
 }
 
 JackDanger.JackRun421337.prototype.render = function() {
-	//game.debug.body(this.jack.sprite);
+	if (this.jack != null) {
+		//game.debug.body(this.jack.sprite);
+	}
 }
 
 JackDanger.JackRun421337.prototype.playerControls = function() {
@@ -177,8 +179,27 @@ JackDanger.JackRun421337.prototype.holeDeath = function(sprite, tile) {
 	if (!this.lose) {
 		if (sprite === this.jack.sprite) {
 			this.lose = true;
-			this.loseCounter = 10;
-			this.jack.fallAnimation();
+			this.loseCounter = 20;
+			
+			// Mitte des Lochs ermitteln
+			var holePos = {};
+			if (tile.index == 36) {
+				holePos.x = tile.x * tile.width;
+				holePos.y = (tile.y + 1) * tile.height;
+			}
+			else if (tile.index == 37) {
+				holePos.x = (tile.x + 1) * tile.width;
+				holePos.y = (tile.y + 1) * tile.height;
+			}
+			else if (tile.index == 61) {
+				holePos.x = tile.x * tile.width;
+				holePos.y = tile.y * tile.height;
+			}
+			else {
+				holePos.x = (tile.x + 1) * tile.width;
+				holePos.y = tile.y * tile.height;
+			}
+			this.jack.fallAnimation(holePos);
 			this.spikes.stop();
 			this.spikeballs.stop();
 		}
@@ -216,6 +237,7 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	
 	// Jack-Sprite
 	this.sprite = game.add.sprite(this.position.x, this.position.y, "jack", "jack_rechts0");
+	this.sprite.anchor.setTo(0.5, 0.5);
 	
 	// Sieg, falls Ende der Welt erreicht wird
 	this.sprite.checkWorldBounds = true;
@@ -228,7 +250,7 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	this.sprite.body.velocity.x = speed;
 	
 	// Kollisions-Box
-	this.sprite.body.setSize(this.sprite.width, this.sprite.height / 4, 0, 0.875 * this.sprite.height);
+	this.sprite.body.setSize(this.sprite.width, this.sprite.height / 4, 0, 0.375 * this.sprite.height);
 	
 	this.setAnimations();
 	this.doAnimation("right");
@@ -248,10 +270,17 @@ JackDanger.JackRun421337.Jack.prototype = {
 		this.stop();
 	},
 	
-	fallAnimation: function() {
+	fallAnimation: function(holePos) {
 		this.fall = true;
+		this.holePos = holePos;
 		this.stop();
-		this.sprite.body.velocity.x = this.speed;
+		
+		// Bewegung ins Loch
+		if (this.holePos.x != this.sprite.x || this.holePos.y != this.sprite.y) {
+			var normalize = Math.sqrt(Math.pow(this.holePos.x - this.sprite.x, 2) + Math.pow(this.holePos.y - this.sprite.y, 2));
+			this.sprite.body.velocity.x = this.speed * (this.holePos.x - this.sprite.x) / normalize;
+			this.sprite.body.velocity.y = this.speed * (this.holePos.y - this.sprite.y) / normalize;			
+		}
 	},
 	
 	update: function(dt) {
@@ -274,6 +303,16 @@ JackDanger.JackRun421337.Jack.prototype = {
 				this.sprite.tint = 0x000000;
 			}
 			this.killFrame = !this.killFrame;
+			
+			// stoppen falls Mitte des Lochs erreicht
+			if (((this.sprite.body.velocity.x > 0 && this.sprite.x >= this.holePos.x)
+						|| (this.sprite.body.velocity.x < 0 && this.sprite.x <= this.holePos.x))
+					&& ((this.sprite.body.velocity.y > 0 && this.sprite.y >= this.holePos.y)
+						|| (this.sprite.body.velocity.y < 0 && this.sprite.y <= this.holePos.y))) {
+				this.stop();
+				this.sprite.x = this.holePos.x;
+				this.sprite.y = this.holePos.y;
+			}
 		}
 		else {
 			// Bewegung
