@@ -53,6 +53,11 @@ JackDanger.JackRun421337.prototype.preload = function() {
 	this.load.atlas("dangers");
 	this.load.tilemap("map", "map.json", null, Phaser.Tilemap.TILED_JSON);
 	this.load.image("tiles", "epyx_JDanger_tiles.png");
+	this.load.audio("kill", ["kill.mp3", "kill.ogg"]);
+	this.load.audio("boost", ["boost.mp3", "boost.ogg"]);
+	this.load.audio("diamond_pos", ["diamond_pos.mp3", "diamond_pos.ogg"]);
+	this.load.audio("diamond_neg", ["diamond_neg.mp3", "diamond_neg.ogg"]);
+	this.load.audio("fall", ["fall.mp3", "fall.ogg"]);
 }
 
 //wird nach dem laden gestartet
@@ -76,6 +81,7 @@ JackDanger.JackRun421337.prototype.mycreate = function() {
 	this.speed = 200;
 	this.points = 0;
 	this.maxPoints = 10;
+	this.sounds = [];
 	
 	this.jackOffset = 64;
 	var jackPos = {};
@@ -110,6 +116,7 @@ JackDanger.JackRun421337.prototype.update = function() {
 	
 	if (this.lose) {
 		if (this.loseCounter == 0) {
+			this.stopSounds();
 			onLose();
 		}
 		this.loseCounter--;
@@ -155,10 +162,11 @@ JackDanger.JackRun421337.prototype.playerControls = function() {
 		this.jack.stopMove();
 	}
 	
-	// Beschleunigung x-Achse
+	// Boost
 	if (Pad.justDown(Pad.JUMP)) {
 		if (this.points == this.maxPoints) {
 			this.jack.speedUp(2, 0.5);
+			this.playSound("boost");
 			this.updatePoints();
 		}
 	}
@@ -185,6 +193,12 @@ JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
 		}
 		
 		this.addPoints(points);
+		if (points > 0) {
+			this.playSound("diamond_pos");
+		}
+		else {
+			this.playSound("diamond_neg");
+		}
 		this.world.collectDiamond(tile, points);
 	}
 }
@@ -193,8 +207,8 @@ JackDanger.JackRun421337.prototype.holeDeath = function(sprite, tile) {
 	logInfo("fall");
 	if (!this.lose) {
 		if (sprite === this.jack.sprite) {
-			this.lose = true;
-			this.loseCounter = 20;
+			this.death(20);
+			this.playSound("fall");
 			
 			// Mitte des Lochs ermitteln
 			var holePos = {};
@@ -214,22 +228,28 @@ JackDanger.JackRun421337.prototype.holeDeath = function(sprite, tile) {
 				holePos.x = (tile.x + 1) * tile.width;
 				holePos.y = tile.y * tile.height;
 			}
+			
+			// starte Fall-Animation
 			this.jack.fallAnimation(holePos);
-			this.spikes.stop();
-			this.spikeballs.stop();
 		}
 	}
 }
 
 JackDanger.JackRun421337.prototype.spikesDeath = function(sprite, tile) {
-	// starte Verloren-Animation
 	if (!this.lose) {
-		this.lose = true;
-		this.loseCounter = 10;
+		this.death(20);
+		this.playSound("kill");
+		
+		// starte Verloren-Animation
 		this.jack.killAnimation();
-		this.spikes.stop();
-		this.spikeballs.stop();
 	}
+}
+
+JackDanger.JackRun421337.prototype.death = function(loseCounter) {
+	this.lose = true;
+	this.loseCounter = loseCounter;
+	this.spikes.stop();
+	this.spikeballs.stop();
 }
 
 JackDanger.JackRun421337.prototype.addPoints = function(points) {
@@ -252,6 +272,18 @@ JackDanger.JackRun421337.prototype.updatePoints = function() {
 	this.maxPoints *= 2;
 	
 	this.hud.setPoints(this.points, this.maxPoints);
+}
+
+JackDanger.JackRun421337.prototype.playSound = function(name) {
+	var sound = this.add.audio(name);
+	sound.play();
+	this.sounds.push(sound);
+}
+
+JackDanger.JackRun421337.prototype.stopSounds = function() {
+	for (var i = 0; i < this.sounds.length; i++) {
+		this.sounds[i].stop();
+	}
 }
 
 JackDanger.JackRun421337.prototype.randomIntFromInterval = function(min, max) {
