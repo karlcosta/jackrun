@@ -103,9 +103,9 @@ JackDanger.JackRun421337.prototype.initialize = function() {
 	this.world = new JackDanger.JackRun421337.World(this);
 	
 	// Gefahren laden
-	this.spikes = new JackDanger.JackRun421337.Spikes(this, this.world, this.speed);
 	var group = this.world.getObjects("SpikeBall", "SpikeBall2");
 	this.spikeballs = new JackDanger.JackRun421337.Spikeballs(group, this.speed);
+	this.spikes = new JackDanger.JackRun421337.Spikes(this, this.world, this.speed);
 	
 	// Jack laden
 	this.jack  = new JackDanger.JackRun421337.Jack(this, jackPos, this.speed);
@@ -228,39 +228,19 @@ JackDanger.JackRun421337.prototype.collectDiamond = function(sprite, tile) {
 	}
 }
 
-JackDanger.JackRun421337.prototype.holeDeath = function(sprite, tile) {
-	logInfo("fall");
+JackDanger.JackRun421337.prototype.holeDeath = function(jack, holeCollider) {
 	if (!this.lose) {
-		if (sprite === this.jack.sprite) {
-			this.death(20);
-			this.playSound("fall");
+		this.death(20);
+		this.playSound("fall");
 			
-			// Mitte des Lochs ermitteln
-			var holePos = {};
-			if (tile.index == 36) {
-				holePos.x = tile.x * tile.width;
-				holePos.y = (tile.y + 1) * tile.height;
-			}
-			else if (tile.index == 37) {
-				holePos.x = (tile.x + 1) * tile.width;
-				holePos.y = (tile.y + 1) * tile.height;
-			}
-			else if (tile.index == 61) {
-				holePos.x = tile.x * tile.width;
-				holePos.y = tile.y * tile.height;
-			}
-			else {
-				holePos.x = (tile.x + 1) * tile.width;
-				holePos.y = tile.y * tile.height;
-			}
+		holePos = this.world.getHolePos(holeCollider);
 			
-			// starte Fall-Animation
-			this.jack.fallAnimation(holePos);
-		}
+		// starte Fall-Animation
+		this.jack.fallAnimation(holePos);
 	}
 }
 
-JackDanger.JackRun421337.prototype.spikesDeath = function(sprite, tile) {
+JackDanger.JackRun421337.prototype.spikesDeath = function(jack, spikes) {
 	if (!this.lose) {
 		this.death(20);
 		this.playSound("kill");
@@ -482,37 +462,24 @@ JackDanger.JackRun421337.World.prototype = {
 				var xPixel = x * this.map.tileWidth;
 				var yPixel = y * this.map.tileHeight;
 				
-				if (tile.index == 36) {
-					for (var i = 0; i < this.map.tileWidth - 5; i++) {
-						var sprite = this.holeColliders.create(xPixel + i, yPixel + 5 + i);
-						this.game.physics.arcade.enable(sprite);
-						sprite.body.setSize(1, this.map.tileHeight - 5 - i);
-						sprite.body.immovable = true;
-					}
-				}
-				else if (tile.index == 37) {
-					for (var i = 5; i < this.map.tileWidth; i++) {
+				if (tile.index == 37) {
+					for (var i = 5; i < this.map.tileWidth; i += 10) {
 						var sprite = this.holeColliders.create(xPixel + i, yPixel + this.map.tileHeight + 4 - i);
 						this.game.physics.arcade.enable(sprite);
-						sprite.body.setSize(1, i - 4);
+						sprite.body.setSize(1, 2 * (i - 4));
 						sprite.body.immovable = true;
 					}
-				}
-				else if (tile.index == 61) {
-					for (var i = 0; i < this.map.tileWidth - 5; i++) {
-						var sprite = this.holeColliders.create(xPixel + i, yPixel);
+					for (var i = this.map.tileWidth - 6; i >= 0; i -= 10) {
+						var sprite = this.holeColliders.create(xPixel + this.map.tileWidth + i, yPixel + 5 + i);
 						this.game.physics.arcade.enable(sprite);
-						sprite.body.setSize(1, this.map.tileHeight - 5 - i);
+						sprite.body.setSize(1, 2 * (this.map.tileHeight - 5 - i));
 						sprite.body.immovable = true;
 					}
-				}
-				else if (tile.index == 62) {
-					for (var i = 5; i < this.map.tileWidth; i++) {
-						var sprite = this.holeColliders.create(xPixel + i, yPixel);
-						this.game.physics.arcade.enable(sprite);
-						sprite.body.setSize(1, i - 4);
-						sprite.body.immovable = true;
-					}
+					
+					var sprite = this.holeColliders.create(xPixel + this.map.tileWidth, yPixel);
+					this.game.physics.arcade.enable(sprite);
+					sprite.body.setSize(1, 2 * this.map.tileHeight);
+					sprite.body.immovable = true;
 				}
 			}
 		}
@@ -538,6 +505,63 @@ JackDanger.JackRun421337.World.prototype = {
 	
 		numberText.body.collideWorldBounds = false;
 		numberText.body.velocity.y = -this.numberTextsSpeed;
+	},
+	
+	getHolePos: function(holeCollider) {
+		var tile = this.map.getTile(Math.floor(holeCollider.x / this.map.tileWidth), Math.floor(holeCollider.y  / this.map.tileHeight));
+		
+		// Mitte des Lochs ermitteln
+		var holePos = {};
+		if (tile.index == 36) {
+			holePos.x = tile.x * tile.width;
+			holePos.y = (tile.y + 1) * tile.height;
+		}
+		else if (tile.index == 37) {
+			holePos.x = (tile.x + 1) * tile.width;
+			holePos.y = (tile.y + 1) * tile.height;
+		}
+		else if (tile.index == 61) {
+			holePos.x = tile.x * tile.width;
+			holePos.y = tile.y * tile.height;
+		}
+		else if (tile.index == 62) {
+			holePos.x = (tile.x + 1) * tile.width;
+			holePos.y = tile.y * tile.height;
+		}
+		return holePos;
+	},
+	
+	getNextHolePos: function(spritePos, tile) {
+		var bestPos = null;
+		var minDist = 2 * Math.max(this.map.tileWidth, this.map.tileHeight);
+		for (var x = -1; x < 2; x++) {
+			for (var y = -1; y < 2; y++) {
+				if (x == 0 && y == 0) {
+					continue;
+				}
+				var newTile = this.map.getTile(Math.floor(tile.x / this.map.tileWidth + x), Math.floor(tile.y /  this.map.tileHeight + y));
+				if (this.isHoleTile(newTile)) {
+					var holePos = this.getHolePos(spritePos, newTile);
+					var dist = this.getDistance(spritePos, holePos);
+					if (dist < minDist) {
+						minDist = dist;
+						bestPos = holePos;
+					}
+				}
+			}
+		}
+		if (bestPos == null) {
+			logInfo("Hole position not found!");
+		}
+		return bestPos;
+	},
+	
+	isHoleTile: function(tile) {
+		return tile.index == 36 || tile.index == 37 || tile.index == 61 || tile.index == 62;
+	},
+	
+	getDistance: function(position1, position2) {
+		return Math.sqrt(Math.pow(position1.x - position2.x, 2) + Math.pow(position1.y - position2.y, 2));
 	},
 	
 	getObjects: function(objectId, key) {
