@@ -104,7 +104,6 @@ JackDanger.JackRun421337.prototype.mycreate = function() {
 	this.hud.setPoints(this.points, this.maxPoints);
 	
 	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
-	this.world.map.setTileIndexCallback([36, 37, 61, 62], this.holeDeath, this);
 	
 	this.physics.setBoundsToWorld();
 }
@@ -132,6 +131,7 @@ JackDanger.JackRun421337.prototype.update = function() {
 		this.physics.arcade.collide(this.jack.sprite, this.world.layer);
 		this.physics.arcade.overlap(this.jack.sprite, this.spikes.sprites, this.spikesDeath, null, this);
 		this.physics.arcade.overlap(this.jack.sprite, this.spikeballs.sprites, this.spikesDeath, null, this);
+		this.physics.arcade.overlap(this.jack.sprite, this.world.holeColliders, this.holeDeath, null, this);
 		this.physics.arcade.collide(this.spikeballs.sprites, this.world.layer);
 	}
 	
@@ -140,14 +140,19 @@ JackDanger.JackRun421337.prototype.update = function() {
 }
 
 JackDanger.JackRun421337.prototype.render = function() {
-	if (this.jack != null) {
-		//game.debug.body(this.jack.sprite);
-	}
-	if (this.spikeballs != null) {
+	/*if (this.jack != null) {
+		game.debug.body(this.jack.sprite);
+	}*/
+	/*if (this.spikeballs != null) {
 		for (var i = 0; i < this.spikeballs.sprites.children.length; i++) {
-			//game.debug.body(this.spikeballs.sprites.children[i]);
+			game.debug.body(this.spikeballs.sprites.children[i]);
 		}
-	}
+	}*/
+	/*if (this.world.holeColliders != null) {
+		for (var i = 0; i < this.world.holeColliders.children.length; i++) {
+			game.debug.body(this.world.holeColliders.children[i]);
+		}
+	}*/
 }
 
 JackDanger.JackRun421337.prototype.playerControls = function() {
@@ -436,6 +441,7 @@ JackDanger.JackRun421337.World = function(game) {
 	this.layer.resizeWorld();
 
 	this.setPassage();
+	this.setHoleColliders();
 	
 	this.numberTextsSpeed = 100;
 }
@@ -445,6 +451,51 @@ JackDanger.JackRun421337.World.prototype = {
 		this.passage = {};
 		this.passage.start = 1;
 		this.passage.end = 12;
+	},
+	
+	setHoleColliders: function() {
+		this.holeColliders = this.game.add.physicsGroup(Phaser.Physics.ARCADE);
+		for (var x = 0; x < this.map.width; x++) {
+			for (var y = this.passage.start; y <= this.passage.end; y++) {
+				var tile = this.map.getTile(x,y);
+				
+				var xPixel = x * this.map.tileWidth;
+				var yPixel = y * this.map.tileHeight;
+				
+				if (tile.index == 36) {
+					for (var i = 0; i < this.map.tileWidth - 5; i++) {
+						var sprite = this.holeColliders.create(xPixel + i, yPixel + 5 + i);
+						this.game.physics.arcade.enable(sprite);
+						sprite.body.setSize(1, this.map.tileHeight - 5 - i);
+						sprite.body.immovable = true;
+					}
+				}
+				else if (tile.index == 37) {
+					for (var i = 5; i < this.map.tileWidth; i++) {
+						var sprite = this.holeColliders.create(xPixel + i, yPixel + this.map.tileHeight + 4 - i);
+						this.game.physics.arcade.enable(sprite);
+						sprite.body.setSize(1, i - 4);
+						sprite.body.immovable = true;
+					}
+				}
+				else if (tile.index == 61) {
+					for (var i = 0; i < this.map.tileWidth - 5; i++) {
+						var sprite = this.holeColliders.create(xPixel + i, yPixel);
+						this.game.physics.arcade.enable(sprite);
+						sprite.body.setSize(1, this.map.tileHeight - 5 - i);
+						sprite.body.immovable = true;
+					}
+				}
+				else if (tile.index == 62) {
+					for (var i = 5; i < this.map.tileWidth; i++) {
+						var sprite = this.holeColliders.create(xPixel + i, yPixel);
+						this.game.physics.arcade.enable(sprite);
+						sprite.body.setSize(1, i - 4);
+						sprite.body.immovable = true;
+					}
+				}
+			}
+		}
 	},
 	
 	collectDiamond: function(tile, number) {
