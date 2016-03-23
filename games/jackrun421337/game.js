@@ -70,6 +70,17 @@ JackDanger.JackRun421337.prototype.create = function() {
 }
 
 JackDanger.JackRun421337.prototype.mycreate = function() {
+	this.sounds = [];
+	
+	// Titel-Musik starten
+	this.playSound("title");
+	
+	this.initialized = false;
+	this.initializing = false;
+}
+
+JackDanger.JackRun421337.prototype.initialize = function() {
+	this.initializing = true;
 	var spritesheetGen = new JackDanger.JackRun421337.SpritesheetGenerator(this);
 	spritesheetGen.createSpriteSheet("dangers", "SpikeBall2");
 	
@@ -82,7 +93,6 @@ JackDanger.JackRun421337.prototype.mycreate = function() {
 	this.speed = 200;
 	this.points = 0;
 	this.maxPoints = 10;
-	this.sounds = [];
 	
 	this.jackOffset = 64;
 	var jackPos = {};
@@ -108,14 +118,20 @@ JackDanger.JackRun421337.prototype.mycreate = function() {
 	
 	this.physics.setBoundsToWorld();
 	
-	// Titel-Musik starten
-	this.playSound("title");
+	this.initializing = false;
+	this.initialized = true;
 }
 
 //wird jeden Frame aufgerufen
 JackDanger.JackRun421337.prototype.update = function() {
-	var dt = this.time.physicsElapsedMS * 0.001;
+	if (!this.initialized) {
+		if (this.cache != null && this.cache.isSoundDecoded("title") && !this.initializing) {
+			this.initialize();
+		}
+		return;
+	}
 	
+	var dt = this.time.physicsElapsedMS * 0.001;
 	
 	if (this.lose) {
 		if (this.loseCounter == 0) {
