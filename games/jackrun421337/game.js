@@ -58,6 +58,7 @@ JackDanger.JackRun421337.prototype.preload = function() {
 	this.load.audio("diamond_pos", ["diamond_pos.mp3", "diamond_pos.ogg"]);
 	this.load.audio("diamond_neg", ["diamond_neg.mp3", "diamond_neg.ogg"]);
 	this.load.audio("fall", ["fall.mp3", "fall.ogg"]);
+	this.load.audio("title", ["title.mp3", "title.ogg"]);
 }
 
 //wird nach dem laden gestartet
@@ -106,6 +107,9 @@ JackDanger.JackRun421337.prototype.mycreate = function() {
 	this.world.map.setTileIndexCallback([67,68,92,93], this.collectDiamond, this);
 	
 	this.physics.setBoundsToWorld();
+	
+	// Titel-Musik starten
+	this.playSound("title");
 }
 
 //wird jeden Frame aufgerufen
