@@ -489,7 +489,7 @@ JackDanger.JackRun421337.World.prototype = {
 		this.replaceTile(tile);
 		
 		// Text für Nummer erstellen
-		var numberText = this.game.add.bitmapText(tile.x * this.map.tileWidth, tile.y * this.map.tileHeight, "testfont", number.toString(), 16);
+		var numberText = this.game.add.bitmapText(tile.x * this.map.tileWidth, tile.y * this.map.tileHeight, "white", number.toString(), 16);
 		
 		if (number < 0) {
 			numberText.tint = 0xff0000;
@@ -644,7 +644,7 @@ JackDanger.JackRun421337.Spikeballs.prototype = {
  * HUD
  */
 JackDanger.JackRun421337.HUD = function(game) {
-	this.numberText = game.add.bitmapText(game.windowWidth / 2, 0, "testfont", "", 32);
+	this.numberText = game.add.bitmapText(game.windowWidth / 2, 0, "white", "", 32);
 	this.numberText.anchor.setTo(0.5, 0);
 	this.numberText.fixedToCamera = true;
 }
