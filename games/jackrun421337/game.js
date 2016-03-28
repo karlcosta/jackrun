@@ -135,8 +135,7 @@ JackDanger.JackRun421337.prototype.update = function() {
 	
 	if (this.lose) {
 		if (this.loseCounter == 0) {
-			this.stopSounds();
-			onLose();
+			this.loss();
 		}
 		this.loseCounter--;
 	}
@@ -173,6 +172,16 @@ JackDanger.JackRun421337.prototype.render = function() {
 			game.debug.body(this.world.holeColliders.children[i]);
 		}
 	}*/
+}
+
+JackDanger.JackRun421337.prototype.loss = function() {
+	this.stopSounds();
+	onLose();
+}
+
+JackDanger.JackRun421337.prototype.win = function() {
+	this.stopSounds();
+	onVictory();
 }
 
 JackDanger.JackRun421337.prototype.playerControls = function() {
@@ -315,7 +324,7 @@ JackDanger.JackRun421337.Jack = function(game, position, speed) {
 	
 	// Sieg, falls Ende der Welt erreicht wird
 	this.sprite.checkWorldBounds = true;
-	this.sprite.events.onOutOfBounds.add(onVictory);
+	this.sprite.events.onOutOfBounds.add(game.win, game);
 	
 	game.physics.arcade.enable(this.sprite);
 	
